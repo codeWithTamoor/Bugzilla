@@ -1,0 +1,29 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Projects</h1>
+
+<% if policy(Project).create? %>
+  <div class="mb-3">
+    <%= link_to "New project", new_project_path, class: "btn btn-primary" %>
+  </div>
+<% end %>
+
+<div id="projects">
+  <% @projects.each do |project| %>
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title"><%= project.name %></h5>
+        <p class="card-text"><%= project.desc %></p>
+        <p class="card-text">
+          <small class="text-muted">
+            Manager: <%= project.manager.name %> | 
+            Developers: <%= project.developers.count %> | 
+            QA: <%= project.qas.count %> | 
+            Tickets: <%= project.tickets.count %>
+          </small>
+        </p>
+        <%= link_to "Show this project", project, class: "btn btn-outline-primary btn-sm" %>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,59 @@
+<%= form_with(model: ticket, local: true, html: { multipart: true }) do |form| %>
+  <% if ticket.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(ticket.errors.count, "error") %> prohibited this ticket from being saved:</h2>
+      <ul>
+        <% ticket.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :type %>
+    <%= form.select :type, [['Bug', 'Bug'], ['Feature', 'Feature']], {}, class: 'form-control' %>
+  </div>
+
+  <div class="field">
+    <%= form.label :title %>
+    <%= form.text_field :title, class: 'form-control' %>
+  </div>
+
+  <div class="field">
+    <%= form.label :description %>
+    <%= form.text_area :description, class: 'form-control' %>
+  </div>
+
+  <div class="field">
+    <%= form.label :project_id %>
+    <%= form.collection_select :project_id, @projects, :id, :name, { include_blank: true }, class: 'form-control' %>
+  </div>
+
+  <div class="field">
+    <%= form.label :developer_id %>
+    <%= form.collection_select :developer_id, @developers, :id, :name, { include_blank: 'Unassigned' }, class: 'form-control' %>
+  </div>
+
+  <div class="field">
+    <%= form.label :status %>
+    <%= form.select :status, Ticket.statuses.keys, {}, class: 'form-control' %>
+  </div>
+
+  <div class="field">
+    <%= form.label :deadline %>
+    <%= form.date_field :deadline, class: 'form-control' %>
+  </div>
+
+  <div class="field">
+    <%= form.label :screenshot %>
+    <%= form.file_field :screenshot, class: 'form-control' %>
+    <% if ticket.screenshot.present? %>
+      <%= image_tag ticket.screenshot.thumb.url %>
+    <% end %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit class: 'btn btn-primary' %>
+  </div>
+<% end %>

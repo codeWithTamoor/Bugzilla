@@ -1,0 +1,53 @@
+<%= form_with(model: project) do |form| %>
+  <% if project.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(project.errors.count, "error") %> prohibited this project from being saved:</h2>
+      <ul>
+        <% project.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :name, style: "display: block" %>
+    <%= form.text_field :name %>
+  </div>
+
+  <div>
+    <%= form.label :desc, style: "display: block" %>
+    <%= form.text_area :desc %>
+  </div>
+
+  <!-- Manager field (hidden for current user) -->
+  <%= form.hidden_field :manager_id, value: current_user.id %>
+
+  <!-- Developers Multi-select Dropdown -->
+  <div>
+    <%= form.label :developer_ids, "Assign Developers", style: "display: block" %>
+    <%= form.collection_select :developer_ids, 
+                              @available_developers, 
+                              :id, 
+                              :name, 
+                              { include_blank: true }, 
+                              { multiple: true, class: "form-select" } %>
+    <small class="text-muted">Hold Ctrl/Cmd to select multiple developers</small>
+  </div>
+
+  <!-- QAs Multi-select Dropdown -->
+  <div>
+    <%= form.label :qa_ids, "Assign QA Testers", style: "display: block" %>
+    <%= form.collection_select :qa_ids, 
+                              @available_qas, 
+                              :id, 
+                              :name, 
+                              { include_blank: true }, 
+                              { multiple: true, class: "form-select" } %>
+    <small class="text-muted">Hold Ctrl/Cmd to select multiple QA testers</small>
+  </div>
+
+  <div>
+    <%= form.submit class: "btn btn-primary mt-3" %>
+  </div>
+<% end %>

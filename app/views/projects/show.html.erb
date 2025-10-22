@@ -1,0 +1,98 @@
+<div id="<%= dom_id @project %>">
+  <p>
+    <strong>Name:</strong>
+    <%= @project.name %>
+  </p>
+
+  <p>
+    <strong>Description:</strong>
+    <%= @project.desc %>
+  </p>
+
+  <p>
+    <strong>Manager:</strong>
+    <%= @project.manager&.name %>
+  </p>
+
+  <!-- Display Assigned Developers -->
+  <div class="mt-4">
+    <strong>Assigned Developers:</strong>
+    <% if @developers.any? %>
+      <ul>
+        <% @developers.each do |developer| %>
+          <li>
+            <%= developer.name %>
+            <% if policy(@project).add_remove_users? %>
+              <%= button_to "Remove", remove_user_project_path(@project, user_id: developer.id), 
+                          method: :delete, 
+                          class: "btn btn-sm btn-outline-danger",
+                          form: { style: "display: inline-block; margin-left: 10px;" } %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-muted">No developers assigned to this project.</p>
+    <% end %>
+  </div>
+
+  <!-- Display Assigned QAs -->
+  <div class="mt-4">
+    <strong>Assigned QA Testers:</strong>
+    <% if @qas.any? %>
+      <ul>
+        <% @qas.each do |qa| %>
+          <li>
+            <%= qa.name %>
+            <% if policy(@project).add_remove_users? %>
+              <%= button_to "Remove", remove_user_project_path(@project, user_id: qa.id), 
+                          method: :delete, 
+                          class: "btn btn-sm btn-outline-danger",
+                          form: { style: "display: inline-block; margin-left: 10px;" } %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-muted">No QA testers assigned to this project.</p>
+    <% end %>
+  </div>
+
+  <!-- Add Users Section for Manager -->
+  <% if policy(@project).add_remove_users? %>
+    <div class="mt-4">
+      <h5>Add Users to Project</h5>
+      
+      <!-- Add Developer -->
+      <%= form_with url: add_user_project_path(@project), method: :post do |form| %>
+        <div class="mb-3">
+          <%= form.label :user_id, "Add Developer", class: "form-label" %>
+          <%= form.collection_select :user_id, 
+                                   @available_developers.where.not(id: @developers.pluck(:id)), 
+                                   :id, :name, 
+                                   { include_blank: "Select Developer" }, 
+                                   class: "form-select" %>
+        </div>
+        <%= form.submit "Add Developer", class: "btn btn-success btn-sm" %>
+      <% end %>
+
+      <!-- Add QA -->
+      <%= form_with url: add_user_project_path(@project), method: :post do |form| %>
+        <div class="mb-3">
+          <%= form.label :user_id, "Add QA Tester", class: "form-label" %>
+          <%= form.collection_select :user_id, 
+                                   @available_qas.where.not(id: @qas.pluck(:id)), 
+                                   :id, :name, 
+                                   { include_blank: "Select QA Tester" }, 
+                                   class: "form-select" %>
+        </div>
+        <%= form.submit "Add QA", class: "btn btn-success btn-sm" %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="mt-3">
+  <%= link_to "Edit this project", edit_project_path(@project), class: "btn btn-warning" %> |
+  <%= link_to "Back to projects", projects_path, class: "btn btn-secondary" %>
+</div>
