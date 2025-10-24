@@ -1,0 +1,52 @@
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h5 class="card-title">
+          <span class="badge bg-warning me-2">🐛 BUG</span>
+          <%= bug.title %>
+        </h5>
+        <p class="card-text text-muted mb-1">
+          <strong>Project:</strong> <%= bug.project.name %>
+        </p>
+        <p class="card-text mb-1">
+          <%= truncate(bug.description, length: 100) %>
+        </p>
+        <p class="card-text">
+          <small class="text-muted">
+            <strong>Status:</strong> 
+            <span class="badge 
+              <%= bug.status == 'new_ticket' ? 'bg-secondary' : '' %>
+              <%= bug.status == 'started' ? 'bg-primary' : '' %>
+              <%= bug.status == 'resolved' ? 'bg-success' : '' %>">
+              <%= bug.status.titleize %>
+            </span>
+            • 
+            <strong>QA:</strong> <%= bug.qa.name %>
+            <% if bug.developer %>
+              • <strong>Developer:</strong> <%= bug.developer.name %>
+            <% end %>
+            • <strong>Deadline:</strong> <%= bug.deadline ? bug.deadline.strftime("%b %d, %Y") : 'Not set' %>
+          </small>
+        </p>
+      </div>
+      <div class="text-end">
+        <% if policy(bug).assign_to_self? && bug.developer.nil? %>
+          <%= button_to "Assign to Me", assign_to_self_ticket_path(bug), 
+                      method: :post, 
+                      class: "btn btn-sm btn-success mb-1" %>
+        <% end %>
+        
+        <% if policy(bug).mark_resolved? && bug.status != 'resolved' %>
+          <%= button_to "Mark Resolved", mark_resolved_ticket_path(bug), 
+                      method: :post, 
+                      class: "btn btn-sm btn-primary mb-1" %>
+        <% end %>
+        
+        <!-- Show basic action links -->
+    <%= link_to "Show", ticket_path(bug), class: "btn btn-sm btn-outline-primary" %>
+
+      </div>
+    </div>
+  </div>
+</div>

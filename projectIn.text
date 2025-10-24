@@ -1,0 +1,320 @@
+<%= form_with(model: project) do |form| %>
+  <% if project.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(project.errors.count, "error") %> prohibited this project from being saved:</h2>
+      <ul>
+        <% project.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <!-- Project Basic Information -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="mb-3">
+        <%= form.label :name, style: "display: block", class: "form-label fw-bold" %>
+        <%= form.text_field :name, class: "form-control" %>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="mb-3">
+        <%= form.label :manager_id, "Project Manager", style: "display: block", class: "form-label fw-bold" %>
+        <%= form.text_field :manager_id, value: current_user.name, class: "form-control", disabled: true %>
+        <small class="text-muted">You are the manager of this project</small>
+        <%= form.hidden_field :manager_id, value: current_user.id %>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :desc, "Description", style: "display: block", class: "form-label fw-bold" %>
+    <%= form.text_area :desc, class: "form-control", rows: 3 %>
+  </div>
+
+  <!-- Team Assignment Section -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Manage Developers</label>
+        
+        <!-- Current Developers Display -->
+        <div class="mb-2">
+          <small class="text-muted fw-bold">Current Developers:</small>
+          <% if project.persisted? && project.developers.any? %>
+            <div id="current-developers" class="mt-1">
+              <% project.developers.each do |developer| %>
+                <div class="d-flex justify-content-between align-items-center mb-1 p-2 border rounded">
+                  <span><%= developer.name %></span>
+                  <button type="button" class="btn btn-sm btn-outline-danger remove-developer" data-user-id="<%= developer.id %>">
+                    Remove
+                  </button>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-muted small mt-1">No developers assigned</p>
+          <% end %>
+        </div>
+
+        <!-- Add Developer Dropdown -->
+        <div class="d-flex gap-2">
+          <select id="developer-dropdown" class="form-select form-select-sm">
+            <option value="">Select Developer</option>
+            <% @available_developers.where.not(id: project.persisted? ? project.developer_ids : []).each do |dev| %>
+              <option value="<%= dev.id %>"><%= dev.name %></option>
+            <% end %>
+          </select>
+          <button type="button" id="add-developer" class="btn btn-success btn-sm">Add</button>
+        </div>
+        
+        <!-- Hidden field for selected developers -->
+        <div id="developer-ids-container">
+          <% if project.persisted? %>
+            <% project.developer_ids.each do |dev_id| %>
+              <%= hidden_field_tag "project[developer_ids][]", dev_id, id: "developer_#{dev_id}" %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Manage QA Testers</label>
+        
+        <!-- Current QA Display -->
+        <div class="mb-2">
+          <small class="text-muted fw-bold">Current QA Testers:</small>
+          <% if project.persisted? && project.qas.any? %>
+            <div id="current-qas" class="mt-1">
+              <% project.qas.each do |qa| %>
+                <div class="d-flex justify-content-between align-items-center mb-1 p-2 border rounded">
+                  <span><%= qa.name %></span>
+                  <button type="button" class="btn btn-sm btn-outline-danger remove-qa" data-user-id="<%= qa.id %>">
+                    Remove
+                  </button>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-muted small mt-1">No QA testers assigned</p>
+          <% end %>
+        </div>
+
+        <!-- Add QA Dropdown -->
+        <div class="d-flex gap-2">
+          <select id="qa-dropdown" class="form-select form-select-sm">
+            <option value="">Select QA Tester</option>
+            <% @available_qas.where.not(id: project.persisted? ? project.qa_ids : []).each do |qa| %>
+              <option value="<%= qa.id %>"><%= qa.name %></option>
+            <% end %>
+          </select>
+          <button type="button" id="add-qa" class="btn btn-success btn-sm">Add</button>
+        </div>
+        
+        <!-- Hidden field for selected QAs -->
+        <div id="qa-ids-container">
+          <% if project.persisted? %>
+            <% project.qa_ids.each do |qa_id| %>
+              <%= hidden_field_tag "project[qa_ids][]", qa_id, id: "qa_#{qa_id}" %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <%= form.submit class: "btn btn-primary mt-3" %>
+  </div>
+<% end %>
+
+<!-- JavaScript for Add/Remove Functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Developer Add/Remove
+  const developerDropdown = document.getElementById('developer-dropdown');
+  const addDeveloperBtn = document.getElementById('add-developer');
+  const currentDevelopersDiv = document.getElementById('current-developers');
+  const developerIdsContainer = document.getElementById('developer-ids-container');
+
+  addDeveloperBtn.addEventListener('click', function() {
+    const selectedDeveloperId = developerDropdown.value;
+    const selectedDeveloperName = developerDropdown.options[developerDropdown.selectedIndex].text;
+    
+    if (selectedDeveloperId && selectedDeveloperName !== 'Select Developer') {
+      // Add to current developers display
+      const developerDiv = document.createElement('div');
+      developerDiv.className = 'd-flex justify-content-between align-items-center mb-1 p-2 border rounded';
+      developerDiv.innerHTML = `
+        <span>${selectedDeveloperName}</span>
+        <button type="button" class="btn btn-sm btn-outline-danger remove-developer" data-user-id="${selectedDeveloperId}">
+          Remove
+        </button>
+      `;
+      
+      if (!currentDevelopersDiv) {
+        // Create current developers div if it doesn't exist
+        const container = document.querySelector('.col-md-6:first-child .mb-2');
+        const newCurrentDevsDiv = document.createElement('div');
+        newCurrentDevsDiv.id = 'current-developers';
+        newCurrentDevsDiv.className = 'mt-1';
+        newCurrentDevsDiv.appendChild(developerDiv);
+        container.appendChild(newCurrentDevsDiv);
+        
+        // Remove "No developers assigned" message
+        const noDevMessage = container.querySelector('p.text-muted');
+        if (noDevMessage) noDevMessage.remove();
+      } else {
+        currentDevelopersDiv.appendChild(developerDiv);
+      }
+      
+      // Add hidden field
+      const hiddenField = document.createElement('input');
+      hiddenField.type = 'hidden';
+      hiddenField.name = 'project[developer_ids][]';
+      hiddenField.value = selectedDeveloperId;
+      hiddenField.id = `developer_${selectedDeveloperId}`;
+      developerIdsContainer.appendChild(hiddenField);
+      
+      // Remove from dropdown
+      developerDropdown.remove(developerDropdown.selectedIndex);
+      developerDropdown.value = '';
+      
+      // Add remove event listener
+      developerDiv.querySelector('.remove-developer').addEventListener('click', function() {
+        removeDeveloper(selectedDeveloperId, selectedDeveloperName, developerDiv);
+      });
+    }
+  });
+
+  // QA Add/Remove
+  const qaDropdown = document.getElementById('qa-dropdown');
+  const addQaBtn = document.getElementById('add-qa');
+  const currentQasDiv = document.getElementById('current-qas');
+  const qaIdsContainer = document.getElementById('qa-ids-container');
+
+  addQaBtn.addEventListener('click', function() {
+    const selectedQaId = qaDropdown.value;
+    const selectedQaName = qaDropdown.options[qaDropdown.selectedIndex].text;
+    
+    if (selectedQaId && selectedQaName !== 'Select QA Tester') {
+      // Add to current QAs display
+      const qaDiv = document.createElement('div');
+      qaDiv.className = 'd-flex justify-content-between align-items-center mb-1 p-2 border rounded';
+      qaDiv.innerHTML = `
+        <span>${selectedQaName}</span>
+        <button type="button" class="btn btn-sm btn-outline-danger remove-qa" data-user-id="${selectedQaId}">
+          Remove
+        </button>
+      `;
+      
+      if (!currentQasDiv) {
+        // Create current QAs div if it doesn't exist
+        const container = document.querySelector('.col-md-6:last-child .mb-2');
+        const newCurrentQasDiv = document.createElement('div');
+        newCurrentQasDiv.id = 'current-qas';
+        newCurrentQasDiv.className = 'mt-1';
+        newCurrentQasDiv.appendChild(qaDiv);
+        container.appendChild(newCurrentQasDiv);
+        
+        // Remove "No QA testers assigned" message
+        const noQaMessage = container.querySelector('p.text-muted');
+        if (noQaMessage) noQaMessage.remove();
+      } else {
+        currentQasDiv.appendChild(qaDiv);
+      }
+      
+      // Add hidden field
+      const hiddenField = document.createElement('input');
+      hiddenField.type = 'hidden';
+      hiddenField.name = 'project[qa_ids][]';
+      hiddenField.value = selectedQaId;
+      hiddenField.id = `qa_${selectedQaId}`;
+      qaIdsContainer.appendChild(hiddenField);
+      
+      // Remove from dropdown
+      qaDropdown.remove(qaDropdown.selectedIndex);
+      qaDropdown.value = '';
+      
+      // Add remove event listener
+      qaDiv.querySelector('.remove-qa').addEventListener('click', function() {
+        removeQa(selectedQaId, selectedQaName, qaDiv);
+      });
+    }
+  });
+
+  // Remove Developer Function
+  function removeDeveloper(developerId, developerName, element) {
+    element.remove();
+    
+    // Remove hidden field
+    const hiddenField = document.getElementById(`developer_${developerId}`);
+    if (hiddenField) hiddenField.remove();
+    
+    // Add back to dropdown
+    const option = document.createElement('option');
+    option.value = developerId;
+    option.textContent = developerName;
+    developerDropdown.appendChild(option);
+    
+    // Check if no developers left
+    if (!developerIdsContainer.querySelector('input[type="hidden"]')) {
+      const container = document.querySelector('.col-md-6:first-child .mb-2');
+      const currentDevsDiv = document.getElementById('current-developers');
+      if (currentDevsDiv) currentDevsDiv.remove();
+      
+      const noDevMessage = document.createElement('p');
+      noDevMessage.className = 'text-muted small mt-1';
+      noDevMessage.textContent = 'No developers assigned';
+      container.appendChild(noDevMessage);
+    }
+  }
+
+  // Remove QA Function
+  function removeQa(qaId, qaName, element) {
+    element.remove();
+    
+    // Remove hidden field
+    const hiddenField = document.getElementById(`qa_${qaId}`);
+    if (hiddenField) hiddenField.remove();
+    
+    // Add back to dropdown
+    const option = document.createElement('option');
+    option.value = qaId;
+    option.textContent = qaName;
+    qaDropdown.appendChild(option);
+    
+    // Check if no QAs left
+    if (!qaIdsContainer.querySelector('input[type="hidden"]')) {
+      const container = document.querySelector('.col-md-6:last-child .mb-2');
+      const currentQasDiv = document.getElementById('current-qas');
+      if (currentQasDiv) currentQasDiv.remove();
+      
+      const noQaMessage = document.createElement('p');
+      noQaMessage.className = 'text-muted small mt-1';
+      noQaMessage.textContent = 'No QA testers assigned';
+      container.appendChild(noQaMessage);
+    }
+  }
+
+  // Initialize remove buttons for existing team members
+  document.querySelectorAll('.remove-developer').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const developerId = this.getAttribute('data-user-id');
+      const developerName = this.parentElement.querySelector('span').textContent;
+      removeDeveloper(developerId, developerName, this.parentElement);
+    });
+  });
+
+  document.querySelectorAll('.remove-qa').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const qaId = this.getAttribute('data-user-id');
+      const qaName = this.parentElement.querySelector('span').textContent;
+      removeQa(qaId, qaName, this.parentElement);
+    });
+  });
+});
+</script>

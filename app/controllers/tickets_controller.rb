@@ -1,6 +1,6 @@
 class TicketsController < ApplicationController
   before_action :set_ticket, only: [:show, :edit, :update, :destroy, :assign_to_self, :mark_resolved, :mark_completed]
-
+  before_action :set_form_data, only: [:new, :create, :edit, :update] 
   def index
     @tickets = policy_scope(Ticket)
     @bugs = @tickets.bugs
@@ -23,7 +23,8 @@ class TicketsController < ApplicationController
     authorize @ticket
 
     if @ticket.save
-      redirect_to @ticket, notice: 'Ticket was successfully created.'
+       redirect_to ticket_path(@ticket), notice: 'Ticket was successfully created.'
+
     else
       set_form_data
       render :new
@@ -31,13 +32,22 @@ class TicketsController < ApplicationController
   end
 
   def update
-    authorize @ticket
-    if @ticket.update(ticket_params)
-      redirect_to @ticket, notice: 'Ticket was successfully updated.'
-    else
-      set_form_data
-      render :edit
-    end
+  authorize @ticket
+
+  permitted_params = if current_user.developer?
+    # Developers can only update the status field
+    params.require(:ticket).permit(:status)
+  else
+    # Others can update everything
+    ticket_params
+  end
+
+  if @ticket.update(permitted_params)
+    redirect_to ticket_path(@ticket), notice: 'Ticket was successfully updated.'
+  else
+    set_form_data
+    render :edit
+  end
   end
 
   def destroy
@@ -49,19 +59,19 @@ class TicketsController < ApplicationController
   def assign_to_self
     authorize @ticket, :assign_to_self?
     @ticket.update(developer: current_user, status: 'started')
-    redirect_to @ticket, notice: 'Ticket assigned to you.'
+    redirect_to ticket_path(@ticket), notice: 'Ticket assigned to you.'
   end
 
   def mark_resolved
     authorize @ticket, :mark_resolved?
     @ticket.update(status: 'resolved')
-    redirect_to @ticket, notice: 'Bug marked as resolved.'
+    redirect_to ticket_path(@ticket), notice: 'Bug marked as resolved.'
   end
 
   def mark_completed
     authorize @ticket, :mark_completed?
     @ticket.update(status: 'completed')
-    redirect_to @ticket, notice: 'Feature marked as completed.'
+    redirect_to ticket_path(@ticket), notice: 'Feature marked as completed.'
   end
 
   private
@@ -80,11 +90,18 @@ class TicketsController < ApplicationController
   end
 
   def ticket_params
-    params.require(:ticket).permit(:title, :type, :status, :developer_id, :project_id, :screenshot, :description, :deadline)
+    params.require(:ticket).permit(:title, :type, :status, :developer_id, :project_id,:description, :deadline)
   end
 
   def set_form_data
-    @projects = current_user.qa? ? Project.all : current_user.projects
-    @developers = User.developer
+  if current_user.qa?
+    @projects = Project.all
+  elsif current_user.manager?
+    # Managers can only see their own projects for ticket creation
+    @projects = current_user.created_projects
+  else
+    @projects = current_user.projects
+  end
+  @developers = User.developer
   end
 end

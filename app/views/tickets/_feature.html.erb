@@ -1,0 +1,52 @@
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h5 class="card-title">
+          <span class="badge bg-info me-2">✨ FEATURE</span>
+          <%= feature.title %>
+        </h5>
+        <p class="card-text text-muted mb-1">
+          <strong>Project:</strong> <%= feature.project.name %>
+        </p>
+        <p class="card-text mb-1">
+          <%= truncate(feature.description, length: 100) %>
+        </p>
+        <p class="card-text">
+          <small class="text-muted">
+            <strong>Status:</strong> 
+            <span class="badge 
+              <%= feature.status == 'new_ticket' ? 'bg-secondary' : '' %>
+              <%= feature.status == 'started' ? 'bg-primary' : '' %>
+              <%= feature.status == 'completed' ? 'bg-success' : '' %>">
+              <%= feature.status.titleize %>
+            </span>
+            • 
+            <strong>QA:</strong> <%= feature.qa.name %>
+            <% if feature.developer %>
+              • <strong>Developer:</strong> <%= feature.developer.name %>
+            <% end %>
+            • <strong>Deadline:</strong> <%= feature.deadline ? feature.deadline.strftime("%b %d, %Y") : 'Not set' %>
+          </small>
+        </p>
+      </div>
+      <div class="text-end">
+        <% if policy(feature).assign_to_self? && feature.developer.nil? %>
+          <%= button_to "Assign to Me", assign_to_self_ticket_path(feature), 
+                      method: :post, 
+                      class: "btn btn-sm btn-success mb-1" %>
+        <% end %>
+        
+        <% if policy(feature).mark_completed? && feature.status != 'completed' %>
+          <%= button_to "Mark Completed", mark_completed_ticket_path(feature), 
+                      method: :post, 
+                      class: "btn btn-sm btn-primary mb-1" %>
+        <% end %>
+        
+        <!-- Show basic action links -->
+        <%= link_to "Show", ticket_path(feature), class: "btn btn-sm btn-outline-primary" %>
+
+      </div>
+    </div>
+  </div>
+</div>

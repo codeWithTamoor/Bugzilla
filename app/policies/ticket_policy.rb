@@ -4,6 +4,8 @@ class TicketPolicy < ApplicationPolicy
   end
 
   def show?
+    return false unless user.present?
+    
     case user.role
     when 'manager'
       record.project.manager_id == user.id || user.projects.include?(record.project)
@@ -17,10 +19,24 @@ class TicketPolicy < ApplicationPolicy
   end
 
   def create?
-    user.qa? || (user.manager? && record.project.manager_id == user.id)
+    return false unless user.present?
+    
+    # QA can always create tickets
+    return true if user.qa?
+    
+    # Managers can create tickets (project validation will happen in form)
+    return true if user.manager?
+    
+    false
+  end
+
+  def new?
+    create?
   end
 
   def update?
+    return false unless user.present?
+    
     case user.role
     when 'manager'
       record.project.manager_id == user.id
@@ -34,23 +50,25 @@ class TicketPolicy < ApplicationPolicy
   end
 
   def destroy?
-    user.manager? && record.project.manager_id == user.id
+    user.present? && user.manager? && record.project.manager_id == user.id
   end
 
   def assign_to_self?
-    user.developer? && user.projects.include?(record.project) && record.developer_id.nil?
+    user.present? && user.developer? && user.projects.include?(record.project) && record.developer_id.nil?
   end
 
   def mark_resolved?
-    user.developer? && record.developer_id == user.id && record.is_a?(Bug)
+    user.present? && user.developer? && record.developer_id == user.id && record.is_a?(Bug)
   end
 
   def mark_completed?
-    user.developer? && record.developer_id == user.id && record.is_a?(Feature)
+    user.present? && user.developer? && record.developer_id == user.id && record.is_a?(Feature)
   end
 
   class Scope < Scope
     def resolve
+      return scope.none unless user.present?
+      
       case user.role
       when 'manager'
         scope.joins(:project).where(projects: { manager_id: user.id }).or(scope.where(project_id: user.projects))

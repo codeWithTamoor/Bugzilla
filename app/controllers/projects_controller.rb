@@ -1,7 +1,7 @@
 class ProjectsController < ApplicationController
   before_action :set_project, only: [:show, :edit, :update, :destroy, :add_user, :remove_user]
   before_action :set_available_users, only: [:new, :edit, :create, :update, :show] # Added :show
-
+  before_action :authenticate_user!
   def index
     @projects = policy_scope(Project)
   end
@@ -10,7 +10,7 @@ class ProjectsController < ApplicationController
     authorize @project
     @developers = @project.developers
     @qas = @project.qas
-    # @available_developers and @available_qas are set by set_available_users
+    
   end
 
   def new

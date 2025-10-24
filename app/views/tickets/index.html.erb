@@ -1,16 +1,82 @@
 <p style="color: green"><%= notice %></p>
 
-<% content_for :title, "Tickets" %>
-
 <h1>Tickets</h1>
 
-<div id="tickets">
-  <% @tickets.each do |ticket| %>
-    <%= render ticket %>
-    <p>
-      <%= link_to "Show this ticket", ticket %>
-    </p>
-  <% end %>
-</div>
+<% if policy(Ticket).create? %>
+  <div class="mb-3">
+    <%= link_to "New ticket", new_ticket_path, class: "btn btn-primary" %>
+  </div>
+<% end %>
 
-<%= link_to "New ticket", new_ticket_path %>
+<!-- Tabs for Bugs and Features -->
+<ul class="nav nav-tabs mb-4" id="ticketsTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+      All Tickets (<%= @tickets.count %>)
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="bugs-tab" data-bs-toggle="tab" data-bs-target="#bugs" type="button" role="tab">
+      Bugs (<%= @bugs.count %>)
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="features-tab" data-bs-toggle="tab" data-bs-target="#features" type="button" role="tab">
+      Features (<%= @features.count %>)
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="ticketsTabContent">
+  <!-- All Tickets Tab -->
+  <div class="tab-pane fade show active" id="all" role="tabpanel">
+    <div id="tickets">
+      <% if @tickets.any? %>
+        <% @tickets.each do |ticket| %>
+          <%= render ticket %>
+          <p>
+            <!-- Use ticket_path here too -->
+            <%= link_to "Show this ticket", ticket_path(ticket), class: "btn btn-outline-primary btn-sm" %>
+          </p>
+        <% end %>
+      <% else %>
+        <div class="alert alert-info">
+          No tickets found. 
+          <% if policy(Ticket).create? %>
+            <%= link_to "Create your first ticket", new_ticket_path %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Bugs Tab -->
+  <div class="tab-pane fade" id="bugs" role="tabpanel">
+    <% if @bugs.any? %>
+      <% @bugs.each do |bug| %>
+        <%= render bug %>
+        <p>
+          <!-- Use ticket_path for bugs -->
+          <%= link_to "Show this bug", ticket_path(bug), class: "btn btn-outline-primary btn-sm" %>
+        </p>
+      <% end %>
+    <% else %>
+      <div class="alert alert-info">No bugs reported yet.</div>
+    <% end %>
+  </div>
+
+  <!-- Features Tab -->
+  <div class="tab-pane fade" id="features" role="tabpanel">
+    <% if @features.any? %>
+      <% @features.each do |feature| %>
+        <%= render feature %>
+        <p>
+          <!-- Use ticket_path for features -->
+          <%= link_to "Show this feature", ticket_path(feature), class: "btn btn-outline-primary btn-sm" %>
+        </p>
+      <% end %>
+    <% else %>
+      <div class="alert alert-info">No features requested yet.</div>
+    <% end %>
+  </div>
+</div>

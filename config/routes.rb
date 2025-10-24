@@ -9,6 +9,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources:tickets
+
   resources :tickets do
     member do
       post 'assign_to_self'
