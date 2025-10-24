@@ -9,7 +9,7 @@ class TicketsController < ApplicationController
 
   def show
     authorize @ticket
-  end
+    end
 
   def new
     @ticket = Ticket.new

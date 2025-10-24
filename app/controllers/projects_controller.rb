@@ -1,27 +1,27 @@
 class ProjectsController < ApplicationController
   before_action :set_project, only: [:show, :edit, :update, :destroy, :add_user, :remove_user]
-  before_action :set_available_users, only: [:new, :edit, :create, :update, :show] # Added :show
+  before_action :set_available_users, only: [:new, :edit, :create, :update, :show]
   before_action :authenticate_user!
   def index
     @projects = policy_scope(Project)
   end
 
-  def show
+   def show
     authorize @project
     @developers = @project.developers
     @qas = @project.qas
-    
   end
 
   def new
     @project = Project.new
     @project.manager = current_user
+    @project.developer_ids = []
+    @project.qa_ids = []
     authorize @project
   end
 
   def edit
     authorize @project
-    # Set the virtual attributes for form
     @project.developer_ids = @project.developers.pluck(:id)
     @project.qa_ids = @project.qas.pluck(:id)
   end
@@ -43,6 +43,7 @@ class ProjectsController < ApplicationController
     if @project.update(project_params)
       redirect_to @project, notice: 'Project was successfully updated.'
     else
+      set_available_users
       render :edit
     end
   end
