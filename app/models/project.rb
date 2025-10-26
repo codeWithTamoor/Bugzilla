@@ -20,10 +20,8 @@ class Project < ApplicationRecord
 
   def assign_users_to_project
     # Clear existing users 
-    if developer_ids.present? || qa_ids.present?
-    developers.clear  
-    qas.clear       
-    end
+    developers.clear if developer_ids.present?
+    qas.clear if qa_ids.present?
 
     #add
     if developer_ids.present?
