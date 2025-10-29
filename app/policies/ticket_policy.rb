@@ -5,7 +5,7 @@ class TicketPolicy < ApplicationPolicy
 
   def show?
     return false unless user.present?
-    
+
     case user
     when Manager
       record.project.manager_id == user.id || user.projects.include?(record.project)
@@ -20,11 +20,9 @@ class TicketPolicy < ApplicationPolicy
 
   def create?
     return false unless user.present?
-    
-    
+
     return true if user.is_a?(Qa)
-    #return true if user.is_a?(Manager)
-    
+    # return true if user.is_a?(Manager)
     false
   end
 
@@ -34,7 +32,7 @@ class TicketPolicy < ApplicationPolicy
 
   def update?
     return false unless user.present?
-    
+
     case user
     when Manager
       record.project.manager_id == user.id
@@ -52,35 +50,42 @@ class TicketPolicy < ApplicationPolicy
   end
 
   def assign_to_self?
-    user.present? && user.is_a?(Developer) && user.projects.include?(record.project) && record.developer_id.nil?
+    user.present? &&
+      user.is_a?(Developer) &&
+      user.projects.include?(record.project) &&
+      record.developer_id.nil?
   end
 
   def mark_resolved?
-    user.present? && user.is_a?(Developer) && record.developer_id == user.id && record.is_a?(Bug)
+    user.present? &&
+      user.is_a?(Developer) &&
+      record.developer_id == user.id &&
+      record.is_a?(Bug)
   end
 
   def mark_completed?
-    user.present? && user.is_a?(Developer) && record.developer_id == user.id && record.is_a?(Feature)
+    user.present? &&
+      user.is_a?(Developer) &&
+      record.developer_id == user.id &&
+      record.is_a?(Feature)
   end
 
   class Scope < Scope
-  def resolve
-    return scope.none unless user.present?
+    def resolve
+      return scope.none unless user.present?
 
-    case user
-    when Manager
-      managed_project_ids = Project.where(manager_id: user.id).pluck(:id)
-      participating_project_ids = user.projects.pluck(:id)
-      scope.where(project_id: managed_project_ids + participating_project_ids)
-
-    when Developer
-      scope.where(project_id: user.projects.pluck(:id))
-    when Qa
-      scope.all
-    else
-      scope.none
+      case user
+      when Manager
+        managed_project_ids = Project.where(manager_id: user.id).pluck(:id)
+        participating_project_ids = user.projects.pluck(:id)
+        scope.where(project_id: managed_project_ids + participating_project_ids)
+      when Developer
+        scope.where(project_id: user.projects.pluck(:id))
+      when Qa
+        scope.all
+      else
+        scope.none
+      end
     end
   end
-end
-
 end

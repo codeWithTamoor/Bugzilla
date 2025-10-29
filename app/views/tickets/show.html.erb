@@ -4,7 +4,7 @@
 
 <div>
   <div class="d-flex gap-2" style="margin-bottom: 6px;" >
-  <%= link_to 'Edit this ticket', edit_ticket_path(@ticket), class: 'btn btn-info' %>
+  <%= link_to 'Edit this ticket', edit_project_ticket_path(@ticket.project,@ticket), class: 'btn btn-info' %>
   <%= link_to 'Back to tickets', tickets_path, class: 'btn btn-secondary' %>
   </div>
 

@@ -1,5 +1,5 @@
 class TicketsController < ApplicationController
-  before_action :set_ticket, only: [:show, :edit, :update, :destroy, :assign_to_self, :mark_resolved, :mark_completed]
+  before_action :set_ticket, only: [ :show, :edit, :update, :destroy, :assign_to_self, :mark_resolved, :mark_completed ]
   before_action :set_form_data, only: [:new, :create, :edit, :update]
 
   def index
@@ -114,6 +114,5 @@ class TicketsController < ApplicationController
   @developers = Developer.all
   end
 end
-
-
+ 
 

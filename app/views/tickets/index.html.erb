@@ -36,7 +36,7 @@
           <%= render ticket %>
           <p>
             <!-- Use ticket_path here too -->
-            <%= link_to "Show this ticket", ticket_path(ticket), class: "btn btn-outline-primary btn-sm" %>
+            <%= link_to "Show this ticket", project_ticket_path(ticket.project,ticket), class: "btn btn-outline-primary btn-sm" %>
           </p>
         <% end %>
       <% else %>
@@ -45,7 +45,7 @@
           <% if policy(Ticket).create? %>
             <%= link_to "Create your first ticket", new_ticket_path %>
           <% end %>
-        </div>x
+        </div>
       <% end %>
     </div>
   </div>
@@ -57,7 +57,7 @@
         <%= render bug %>
         <p>
           <!-- Use ticket_path for bugs -->
-          <%= link_to "Show this bug", ticket_path(bug), class: "btn btn-outline-primary btn-sm" %>
+          <%= link_to "Show this bug", project_ticket_path(bug.project,bug), class: "btn btn-outline-primary btn-sm" %>
         </p>
       <% end %>
     <% else %>
@@ -72,7 +72,7 @@
         <%= render feature %>
         <p>
           <!-- Use ticket_path for features -->
-          <%= link_to "Show this feature", ticket_path(feature), class: "btn btn-outline-primary btn-sm" %>
+          <%= link_to "Show this feature", project_ticket_path(feature.project,feature), class: "btn btn-outline-primary btn-sm" %>
         </p>
       <% end %>
     <% else %>

@@ -33,11 +33,19 @@
       <%= form.text_area :description, class: 'form-control' %>
     </div>
 
-    <div class="field">
-      <%= form.label :project_id %>
-      <%= form.collection_select :project_id, @projects, :id, :name, { include_blank: true }, class: 'form-control' %>
-    </div>
+     <% if action_name == 'edit' %>
+     <div class="field" >
+      <%= form.label :project.name %>
+      <%= text_area_tag :project_name, @ticket.project.name, class: 'form-control', readonly: true  %>
+     </div>
+     <%end%>
 
+    <% if action_name == 'new' %>
+     <div class="field">
+        <%= form.label :project_id, "Project" %>
+        <%= form.collection_select :project_id, @projects, :id, :name, { include_blank: "Select a project" }, class: 'form-control' %>
+     </div>
+     <% end %>
     <div class="field">
       <%= form.label :developer_id %>
       <%= form.collection_select :developer_id, @developers, :id, :name, { include_blank: 'Unassigned' }, class: 'form-control' %>
@@ -53,10 +61,15 @@
       <%= form.date_field :deadline, class: 'form-control' %>
     </div>
 
+
+    <% if @ticket.screenshot.attached? %>
+      <div class="existing-image">
+        <%= image_tag @ticket.screenshot, size: "200x200" %>
+      </div>
+    <% end %>
       <div class="field">
-      <%= form.label :screenshot %>
-      <%= form.file_field :screenshot, class: 'form-control' %>
-     
+        <%= form.label :screenshot %>
+        <%= form.file_field :screenshot,class: 'form-control' %>
       </div>
       <% end %>
 
