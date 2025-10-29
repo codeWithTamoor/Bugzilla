@@ -42,10 +42,13 @@
                       method: :post, 
                       class: "btn btn-sm btn-primary mb-1" %>
         <% end %>
+         <% if feature.screenshot.attached? %>
+          <%= image_tag url_for(feature.screenshot), class: "img-thumbnail", style: "max-width: 300px;" %>
+        <% else %>
+        <p>No image attached.</p>
+        <% end %>
         
-        <!-- Show basic action links -->
- <%= link_to "Show", ticket_path(feature), class: "btn btn-sm btn-outline-primary" %>
-
+        
       </div>
     </div>
   </div>

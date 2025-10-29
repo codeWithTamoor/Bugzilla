@@ -1,30 +1,38 @@
 class TicketsController < ApplicationController
   before_action :set_ticket, only: [:show, :edit, :update, :destroy, :assign_to_self, :mark_resolved, :mark_completed]
-  before_action :set_form_data, only: [:new, :create, :edit, :update] 
+  before_action :set_form_data, only: [:new, :create, :edit, :update]
+
   def index
     @tickets = policy_scope(Ticket)
+
+    if params[:project_id]
+      @project = Project.find(params[:project_id])
+      @tickets = @tickets.where(project_id: @project.id)
+    end
+
     @bugs = @tickets.bugs
     @features = @tickets.features
   end
 
   def show
     authorize @ticket
-    end
+  end
 
   def new
     @ticket = Ticket.new
     authorize @ticket
-    set_form_data
+
+    # set_form_data
   end
 
   def create
     @ticket = build_ticket_from_type
+    # @ticket = Ticket.new(ticket_params)
     @ticket.qa = current_user
     authorize @ticket
 
     if @ticket.save
-       redirect_to ticket_path(@ticket), notice: 'Ticket was successfully created.'
-
+      redirect_to ticket_path(@ticket), notice: 'Ticket was successfully created.'
     else
       set_form_data
       render :new
@@ -34,16 +42,18 @@ class TicketsController < ApplicationController
   def update
   authorize @ticket
 
-  permitted_params = if current_user.developer?
-    # Developers can only update the status field
+  permitted_params = if current_user.is_a?(Developer)
+    
     params.require(:ticket).permit(:status)
+  #puts params.inspect
   else
-    # Others can update everything
-    ticket_params
+     ticket_params
   end
 
   if @ticket.update(permitted_params)
     redirect_to ticket_path(@ticket), notice: 'Ticket was successfully updated.'
+    Rails.logger.debug "Params: #{params.inspect}"
+    puts ticket_params
   else
     set_form_data
     render :edit
@@ -90,18 +100,20 @@ class TicketsController < ApplicationController
   end
 
   def ticket_params
-    params.require(:ticket).permit(:title, :type, :status, :developer_id, :project_id,:description, :deadline)
+    params.require(:ticket).permit(:title, :type, :status, :developer_id, :project_id,:description, :deadline, :screenshot)
   end
 
   def set_form_data
-  if current_user.qa?
+  if current_user.is_a?(Qa)
     @projects = Project.all
-  elsif current_user.manager?
-    # Managers can only see their own projects for ticket creation
+  elsif current_user.is_a?(Manager)
     @projects = current_user.created_projects
   else
     @projects = current_user.projects
   end
-  @developers = User.developer
+  @developers = Developer.all
   end
 end
+
+
+

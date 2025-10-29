@@ -10,7 +10,7 @@
     </div>
   <% end %>
 
-  <% if current_user.developer? %>
+  <% if current_user.is_a?(Developer) %>
     <!-- Developers can only update status -->
     <div class="field">
       <%= form.label :status %>
@@ -53,16 +53,14 @@
       <%= form.date_field :deadline, class: 'form-control' %>
     </div>
 
-    <div class="field">
+      <div class="field">
       <%= form.label :screenshot %>
       <%= form.file_field :screenshot, class: 'form-control' %>
-      <% if ticket.screenshot.present? %>
-        <%= image_tag ticket.screenshot.thumb.url %>
+     
+      </div>
       <% end %>
-    </div>
-  <% end %>
 
   <div class="actions">
     <%= form.submit class: 'btn btn-primary' %>
   </div>
-<% end %>
+    <% end %>

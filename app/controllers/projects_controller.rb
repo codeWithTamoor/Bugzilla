@@ -2,6 +2,7 @@ class ProjectsController < ApplicationController
   before_action :set_project, only: [:show, :edit, :update, :destroy, :add_user, :remove_user]
   before_action :set_available_users, only: [:new, :edit, :create, :update, :show]
   before_action :authenticate_user!
+
   def index
     @projects = policy_scope(Project)
   end
@@ -57,18 +58,23 @@ class ProjectsController < ApplicationController
   def add_user
     authorize @project, :add_remove_users?
     user = User.find(params[:user_id])
-    if @project.users << user
-      redirect_to @project, notice: 'User added to project.'
+    unless @project.users.exists?(user.id)
+      @project.users << user
+      notice = "#{user.name} added to project."
     else
-      redirect_to @project, alert: 'Could not add user to project.'
+      notice = "#{user.name} is already part of this project."
     end
+    redirect_to @project, notice: notice
   end
 
   def remove_user
     authorize @project, :add_remove_users?
     user = User.find(params[:user_id])
-    @project.users.delete(user)
-    redirect_to @project, notice: 'User removed from project.'
+    if @project.users.delete(user)
+      redirect_to @project, notice: "#{user.name} removed from project."
+    else
+      redirect_to @project, alert: "Failed to remove user."
+    end
   end
 
   private
@@ -78,8 +84,8 @@ class ProjectsController < ApplicationController
   end
 
   def set_available_users
-    @available_developers = User.developer
-    @available_qas = User.qa
+    @available_developers = Developer.all
+    @available_qas = Qa.all
   end
 
   def project_params

@@ -4,12 +4,12 @@ class ProjectPolicy < ApplicationPolicy
   end
 
   def show?
-    case user.role
-    when 'manager'
+    case user
+    when Manager
       record.manager_id == user.id || user.projects.include?(record)
-    when 'developer'
+    when Developer
       user.projects.include?(record)
-    when 'qa'
+    when Qa
       true
     else
       false
@@ -17,30 +17,30 @@ class ProjectPolicy < ApplicationPolicy
   end
 
   def create?
-    user.manager?
+    user.is_a?(Manager)
   end
 
   def update?
-    user.manager? && record.manager_id == user.id
+    user.is_a?(Manager) && record.manager_id == user.id
   end
 
   def destroy?
-    user.manager? && record.manager_id == user.id
+    user.is_a?(Manager) && record.manager_id == user.id
   end
 
   def add_remove_users?
-    user.manager? && record.manager_id == user.id
+    user.is_a?(Manager) && record.manager_id == user.id
   end
 
 
   class Scope < Scope
     def resolve
-      case user.role
-      when 'manager'
+      case user
+      when Manager
         scope.where(manager_id: user.id).or(scope.where(id: user.projects))
-      when 'developer'
+      when Developer
         user.projects
-      when 'qa'
+      when Qa
         scope.all
       else
         scope.none

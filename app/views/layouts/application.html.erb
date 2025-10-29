@@ -45,20 +45,22 @@
               <li class="nav-item">
                 <%= link_to "Projects", projects_path, class: "nav-link" %>
               </li>
+             
               <li class="nav-item">
                 <%= link_to "Tickets", tickets_path, class: "nav-link" %>
               </li>
+            
             </ul>
             
             <%# User info and logout %>
             <ul class="navbar-nav ms-auto">
               <li class="nav-item">
-                <span class="navbar-text me-3">
+                <span class="navbar-text me-3" style="font-size:22px;" >
                   Welcome, <strong><%= current_user.name %></strong> 
-                  <span class="badge bg-secondary"><%= current_user.role %></span>
+                  <span class="badge bg-secondary"><%= current_user.type %></span>
                 </span>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" >
                 <%= link_to "Logout", destroy_user_session_path, 
                     data: { turbo_method: :delete }, 
                     class: "nav-link btn btn-outline-light btn-sm" %>

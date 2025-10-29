@@ -22,7 +22,13 @@
             Tickets: <%= project.tickets.count %>
           </small>
         </p>
+
+       
         <%= link_to "Show this project", project, class: "btn btn-outline-primary btn-sm" %>
+
+        <%= link_to project_tickets_path(project), class: "btn btn-info btn-sm ms-2" do %>
+          <i class="bi bi-ticket-detailed me-1"></i>Show Tickets
+        <% end %>
       </div>
     </div>
   <% end %>

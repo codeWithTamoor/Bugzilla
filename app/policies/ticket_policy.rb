@@ -6,12 +6,12 @@ class TicketPolicy < ApplicationPolicy
   def show?
     return false unless user.present?
     
-    case user.role
-    when 'manager'
+    case user
+    when Manager
       record.project.manager_id == user.id || user.projects.include?(record.project)
-    when 'developer'
+    when Developer
       user.projects.include?(record.project)
-    when 'qa'
+    when Qa
       true
     else
       false
@@ -21,11 +21,9 @@ class TicketPolicy < ApplicationPolicy
   def create?
     return false unless user.present?
     
-    # QA can always create tickets
-    return true if user.qa?
     
-    # Managers can create tickets (project validation will happen in form)
-    return true if user.manager?
+    return true if user.is_a?(Qa)
+    #return true if user.is_a?(Manager)
     
     false
   end
@@ -37,12 +35,12 @@ class TicketPolicy < ApplicationPolicy
   def update?
     return false unless user.present?
     
-    case user.role
-    when 'manager'
+    case user
+    when Manager
       record.project.manager_id == user.id
-    when 'developer'
+    when Developer
       user.projects.include?(record.project) && record.developer_id == user.id
-    when 'qa'
+    when Qa
       record.qa_id == user.id
     else
       false
@@ -50,35 +48,39 @@ class TicketPolicy < ApplicationPolicy
   end
 
   def destroy?
-    user.present? && user.manager? && record.project.manager_id == user.id
+    user.present? && (user.is_a?(Manager) || user.is_a?(Qa))
   end
 
   def assign_to_self?
-    user.present? && user.developer? && user.projects.include?(record.project) && record.developer_id.nil?
+    user.present? && user.is_a?(Developer) && user.projects.include?(record.project) && record.developer_id.nil?
   end
 
   def mark_resolved?
-    user.present? && user.developer? && record.developer_id == user.id && record.is_a?(Bug)
+    user.present? && user.is_a?(Developer) && record.developer_id == user.id && record.is_a?(Bug)
   end
 
   def mark_completed?
-    user.present? && user.developer? && record.developer_id == user.id && record.is_a?(Feature)
+    user.present? && user.is_a?(Developer) && record.developer_id == user.id && record.is_a?(Feature)
   end
 
   class Scope < Scope
-    def resolve
-      return scope.none unless user.present?
-      
-      case user.role
-      when 'manager'
-        scope.joins(:project).where(projects: { manager_id: user.id }).or(scope.where(project_id: user.projects))
-      when 'developer'
-        scope.where(project_id: user.projects)
-      when 'qa'
-        scope.all
-      else
-        scope.none
-      end
+  def resolve
+    return scope.none unless user.present?
+
+    case user
+    when Manager
+      managed_project_ids = Project.where(manager_id: user.id).pluck(:id)
+      participating_project_ids = user.projects.pluck(:id)
+      scope.where(project_id: managed_project_ids + participating_project_ids)
+
+    when Developer
+      scope.where(project_id: user.projects.pluck(:id))
+    when Qa
+      scope.all
+    else
+      scope.none
     end
   end
+end
+
 end

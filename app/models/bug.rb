@@ -1,7 +1,7 @@
 class Bug < Ticket
   # Bug-specific validations
   validate :bug_status_valid
-  
+
   private
   
   def bug_status_valid
