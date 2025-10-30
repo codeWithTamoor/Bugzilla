@@ -12,7 +12,7 @@ class Ticket < ApplicationRecord
   validates :type, presence: true
   validates :qa_id, presence: true
   validates :project_id, presence: true
-   validate :acceptable_screenshot
+  validate :acceptable_screenshot
 
   scope :bugs, -> { where(type: 'Bug') }
   scope :features, -> { where(type: 'Feature') }
