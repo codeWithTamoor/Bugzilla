@@ -17,6 +17,14 @@ gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
+
+group :development, :test do
+  gem 'rspec-rails'
+end
+group :test do
+  gem 'shoulda-matchers', '~> 5.3'
+end
+
 gem 'rubocop', require: false
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
