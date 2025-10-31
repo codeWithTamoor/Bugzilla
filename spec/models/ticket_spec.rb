@@ -3,7 +3,8 @@ require 'rails_helper'
 RSpec.describe Ticket, type: :model do
   let(:manager) {Manager.create!(name:"arslan",email:"arslan@gmail.com",password:"password")}
   let(:project) { Project.create!(name: "Test Project",manager:manager) }
-  let(:qa) { Qa.create!(email: "qa@example.com", name: "QA Tester", password: "password") }
+  let(:qa) { Qa.create!(email: "qa#{SecureRandom.hex(3)}@example.com", name: "QA Tester", password: "password") }
+
 
   it {should belong_to(:project)}
   it {should belong_to(:developer).optional}

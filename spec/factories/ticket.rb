@@ -6,7 +6,7 @@ FactoryBot.define do
     status { :new_ticket }
     association :qa, factory: :qa
     association :project
-    type { "Ticket" } # default type
+    type { "Ticket" } 
 
     factory :bug, class: 'Bug'
     factory :feature, class: 'Feature'
