@@ -1,13 +1,12 @@
 # spec/factories/tickets.rb
 FactoryBot.define do
   factory :ticket do
-    title       { "Ticket #{Faker::Number.unique.number(digits: 3)}" }
-    status      { 0 } # assuming enum 0 = new_ticket
-    description { Faker::Lorem.sentence }
-    deadline    { Date.today + 7.days }
-    association :developer, factory: :developer
+    sequence(:title) { |n| "Ticket #{n}" }
+    description { "Sample ticket" }
+    status { :new_ticket }
     association :qa, factory: :qa
     association :project
+    type { "Ticket" } # default type
 
     factory :bug, class: 'Bug'
     factory :feature, class: 'Feature'
