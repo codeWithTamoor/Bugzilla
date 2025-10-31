@@ -17,12 +17,20 @@ gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
-
+group :test do
+  gem 'pundit-matchers'
+end
+group :development, :test do
+  gem 'faker'
+end
 group :development, :test do
   gem 'rspec-rails'
 end
 group :test do
   gem 'shoulda-matchers', '~> 5.3'
+end
+group :development, :test do
+  gem 'factory_bot_rails'
 end
 
 gem 'rubocop', require: false
