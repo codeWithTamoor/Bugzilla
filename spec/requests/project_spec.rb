@@ -18,8 +18,6 @@ RSpec.describe 'Projects', type: :request do
     sign_in_user(manager)
     developer.projects << own_project
   end
-
-  # ----------------------------------------------------
   describe '#index' do
     it 'shows only projects accessible to the signed-in manager' do
       get projects_path  
@@ -29,5 +27,20 @@ RSpec.describe 'Projects', type: :request do
       expect(response.body).not_to include(foreign_project.name)
     end
   end
+
+  describe '#show' do
+  context 'when the manager is authorized' do
+    it 'renders the project details successfully' do
+      get project_path(own_project)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include(own_project.name)
+      expect(response.body).to include(own_project.desc) if own_project.desc.present?
+    end
+  end
+
+  
+end
+
   
 end
