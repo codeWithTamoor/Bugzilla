@@ -41,6 +41,42 @@ RSpec.describe 'Projects', type: :request do
 
   
 end
+describe '#create' do
+  let(:valid_params) do
+    { project: { name: 'New Project', desc: 'Project Description' } }
+  end
+
+  let(:invalid_params) do
+    { project: { name: '', desc: '' } }
+  end
+
+  context 'when params are valid' do
+    it 'creates a new project and redirects to the project page' do
+      expect {
+        post projects_path, params: valid_params
+      }.to change(Project, :count).by(1)
+
+      expect(response).to redirect_to(Project.last)
+      follow_redirect!
+
+      expect(response.body).to include('New Project')
+    end
+  end
+
+  context 'when params are invalid' do
+    it 'does not create a project and re-renders the new form' do
+      expect {
+        post projects_path, params: invalid_params
+      }.not_to change(Project, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity).or have_http_status(:ok)
+      expect(response.body).to include('error').or include('Name')
+    end
+  end
+
+  
+end
+
 
   
 end
