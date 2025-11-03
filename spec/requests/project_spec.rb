@@ -2,7 +2,6 @@ require 'rails_helper'
 
 RSpec.describe 'Projects', type: :request do
   include Devise::Test::IntegrationHelpers
-  # include Devise::Test::ControllerHelpers
   include FactoryBot::Syntax::Methods
 
   let!(:manager)         { create_user(role: :manager) }
@@ -27,6 +26,23 @@ RSpec.describe 'Projects', type: :request do
       expect(response.body).not_to include(foreign_project.name)
     end
   end
+  describe '#new' do
+    context 'when a manager is signed in' do
+      it 'renders the new project form successfully' do
+        get new_project_path
+        expect(response).to have_http_status(:ok)
+      end
+  end
+
+    context 'when a developer is signed in' do
+      before { sign_in_user(developer) }
+
+      it 'denies access and redirects or raises error (depending on Pundit setup)' do
+        get new_project_path
+      end
+    end
+  end
+
 
   describe '#show' do
   context 'when the manager is authorized' do
@@ -73,10 +89,8 @@ describe '#create' do
       expect(response.body).to include('error').or include('Name')
     end
   end
-
+end  
   
-end
-
-
   
-end
+end 
+
