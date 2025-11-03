@@ -117,7 +117,20 @@ end
       end
     end
   end  
- 
+  describe '#destroy' do
+    context 'when manager owns the project' do
+       it 'deletes the project and redirects to index' do
+         expect {
+          delete project_path(own_project)
+         }.to change(Project, :count).by(-1)
+
+        expect(response).to redirect_to(projects_path)
+        follow_redirect!
+
+        expect(response.body).to include('Project was successfully destroyed')
+      end
+    end 
+  end
   
   
   
