@@ -2,15 +2,15 @@ require 'rails_helper'
 
 RSpec.describe ProjectPolicy, type: :policy do
   include FactoryBot::Syntax::Methods
-  def policy_for(user,record)
-    described_class.new(user,record)
+  def policy_for(user, record)
+    described_class.new(user, record)
   end
-  let!(:manager) {create(:manager)}
-  let!(:developer) {create(:developer)}
-  let!(:qa) {create(:qa)}
-  let!(:other_manager) {create(:manager)}
-  let!(:own_project) {create(:project,manager:manager)}
-  let!(:foreign_project) {create(:project,manager:other_manager)}
+  let!(:manager) { create(:manager) }
+  let!(:developer) { create(:developer) }
+  let!(:qa) { create(:qa) }
+  let!(:other_manager) { create(:manager) }
+  let!(:own_project) { create(:project, manager: manager) }
+  let!(:foreign_project) { create(:project, manager: other_manager) }
 
   before do
     developer.projects<<own_project
@@ -18,15 +18,15 @@ RSpec.describe ProjectPolicy, type: :policy do
 
   describe '#index?' do
     it 'allows everyone' do
-      expect(policy_for(manager,Project).index?).to be true
-      expect(policy_for(developer,Project).index?).to be true
-      expect(policy_for(qa,Project).index?).to be true
+      expect(policy_for(manager, Project).index?).to be true
+      expect(policy_for(developer, Project).index?).to be true
+      expect(policy_for(qa, Project).index?).to be true
     end
-  end  
+  end
   describe '#show?' do
     context 'when manager' do
       it 'allow access to own project' do
-        expect(policy_for(manager,own_project).show?).to be true
+        expect(policy_for(manager, own_project).show?).to be true
       end
       it 'denies access to others project' do
         expect(policy_for(manager, foreign_project).show?).to be false
@@ -42,7 +42,7 @@ RSpec.describe ProjectPolicy, type: :policy do
     end
     context 'when qa' do
       it 'allows to access to every project' do
-        expect(policy_for(qa,foreign_project).show?).to be true
+        expect(policy_for(qa, foreign_project).show?).to be true
       end
     end
   end
@@ -79,7 +79,7 @@ RSpec.describe ProjectPolicy, type: :policy do
     end
   end
   describe 'Scope' do
-    subject(:scope) {described_class::Scope.new(user,Project.all).resolve}
+    subject(:scope) { described_class::Scope.new(user, Project.all).resolve }
     let!(:manager_project)   { Project.create!(name: "Manager Project", manager: manager) }
     let!(:other_project)     { Project.create!(name: "Other Project", manager: other_manager) }
     let!(:developer_project) { Project.create!(name: "Developer Project", manager: other_manager) }
@@ -88,14 +88,14 @@ RSpec.describe ProjectPolicy, type: :policy do
       developer.projects << developer_project
     end
     context 'for manager' do
-      let(:user){manager}
+      let(:user) { manager }
       it 'includes only project they manage or thet are assigned to' do
         expect(scope).to include(manager_project)
         expect(scope).not_to include(other_project)
       end
-    end  
+    end
     context 'for developer' do
-      let(:user){developer}
+      let(:user) { developer }
       it 'include project ther are assigned' do
         expect(scope).to include(developer_project)
         expect(scope).not_to include(other_project)
@@ -107,12 +107,6 @@ RSpec.describe ProjectPolicy, type: :policy do
       it 'includes all projects' do
         expect(scope).to include(manager_project, other_project, developer_project)
       end
-    end  
-
+    end
   end
-  
-
-  
-
-  
 end

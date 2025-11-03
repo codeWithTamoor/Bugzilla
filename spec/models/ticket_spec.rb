@@ -1,26 +1,26 @@
 require 'rails_helper'
 
 RSpec.describe Ticket, type: :model do
-  let(:manager) {Manager.create!(name:"arslan",email:"arslan@gmail.com",password:"password")}
-  let(:project) { Project.create!(name: "Test Project",manager:manager) }
+  let(:manager) { Manager.create!(name: "arslan", email: "arslan@gmail.com", password: "password") }
+  let(:project) { Project.create!(name: "Test Project", manager: manager) }
   let(:qa) { Qa.create!(email: "qa#{SecureRandom.hex(3)}@example.com", name: "QA Tester", password: "password") }
 
 
-  it {should belong_to(:project)}
-  it {should belong_to(:developer).optional}
-  it {should belong_to(:qa)}
-  it {should have_one_attached(:screenshot)}
-  it {should validate_presence_of(:title)}
-  it {should validate_uniqueness_of(:title).scoped_to(:project_id)}
-  it {should validate_presence_of(:status)}
-  it {should validate_presence_of(:qa_id)}
-  it {should validate_presence_of(:type)}
-  it {should validate_presence_of(:project_id)}
+  it { should belong_to(:project) }
+  it { should belong_to(:developer).optional }
+  it { should belong_to(:qa) }
+  it { should have_one_attached(:screenshot) }
+  it { should validate_presence_of(:title) }
+  it { should validate_uniqueness_of(:title).scoped_to(:project_id) }
+  it { should validate_presence_of(:status) }
+  it { should validate_presence_of(:qa_id) }
+  it { should validate_presence_of(:type) }
+  it { should validate_presence_of(:project_id) }
 
   describe 'status enums' do
     it 'defines correct enum values' do
-      expect(Ticket.statuses.keys).to contain_exactly('new_ticket','started','resolved','completed')
-      expect(Ticket.statuses.values).to contain_exactly(0,1,2,3)
+      expect(Ticket.statuses.keys).to contain_exactly('new_ticket', 'started', 'resolved', 'completed')
+      expect(Ticket.statuses.values).to contain_exactly(0, 1, 2, 3)
     end
   end
 
@@ -29,7 +29,7 @@ RSpec.describe Ticket, type: :model do
       Ticket.new(
         title: "Bug Screenshot Test",
         status: :new_ticket,
-        type: "Bug",    
+        type: "Bug",
         qa: qa,
         project: project
       )

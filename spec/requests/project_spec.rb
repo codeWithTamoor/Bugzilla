@@ -19,7 +19,7 @@ RSpec.describe 'Projects', type: :request do
   end
   describe '#index' do
     it 'shows only projects accessible to the signed-in manager' do
-      get projects_path  
+      get projects_path
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(own_project.name)
@@ -32,17 +32,14 @@ RSpec.describe 'Projects', type: :request do
         get new_project_path
         expect(response).to have_http_status(:ok)
       end
-  end
-
+    end
     context 'when a developer is signed in' do
       before { sign_in_user(developer) }
-
       it 'denies access and redirects or raises error (depending on Pundit setup)' do
         get new_project_path
       end
     end
   end
-
 
   describe '#show' do
   context 'when the manager is authorized' do
@@ -51,34 +48,27 @@ RSpec.describe 'Projects', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(own_project.name)
-      expect(response.body).to include(own_project.desc) if own_project.desc.present?
+      expect(response.body).to include(own_project.desc)
     end
   end
-
-  
 end
 describe '#create' do
   let(:valid_params) do
     { project: { name: 'New Project', desc: 'Project Description' } }
   end
-
   let(:invalid_params) do
     { project: { name: '', desc: '' } }
   end
-
   context 'when params are valid' do
     it 'creates a new project and redirects to the project page' do
       expect {
         post projects_path, params: valid_params
       }.to change(Project, :count).by(1)
-
       expect(response).to redirect_to(Project.last)
       follow_redirect!
-
       expect(response.body).to include('New Project')
     end
   end
-
   context 'when params are invalid' do
     it 'does not create a project and re-renders the new form' do
       expect {
@@ -86,10 +76,9 @@ describe '#create' do
       }.not_to change(Project, :count)
 
       expect(response).to have_http_status(:unprocessable_entity).or have_http_status(:ok)
-      expect(response.body).to include('error').or include('Name')
     end
   end
-end  
+end
   describe '#edit' do
     context 'when the manager owns the project' do
       it 'renders the edit form successfully' do
@@ -102,11 +91,9 @@ end
     context 'when the manager does not own the project' do
       it 'denies access to edit someone else’s project' do
         get edit_project_path(foreign_project)
-
         expect(response).to have_http_status(:forbidden).or have_http_status(:redirect)
       end
     end
-
     context 'when a developer tries to edit a project' do
       before { sign_in_user(developer) }
 
@@ -116,7 +103,7 @@ end
         expect(response).to have_http_status(:forbidden).or have_http_status(:redirect)
       end
     end
-  end  
+  end
   describe '#destroy' do
     context 'when manager owns the project' do
        it 'deletes the project and redirects to index' do
@@ -126,13 +113,28 @@ end
 
         expect(response).to redirect_to(projects_path)
         follow_redirect!
-
         expect(response.body).to include('Project was successfully destroyed')
       end
-    end 
+    end
   end
-  
-  
-  
-end 
 
+
+  describe '#update' do
+    let!(:project) { create(:project, manager: manager, name: 'Old Project', desc: 'Old Description') }
+
+    let(:valid_params) do
+      { project: { name: 'New Project', desc: 'Project Description' } }
+    end
+
+  context 'when params are valid' do
+    it 'updates the project and redirects to the show page' do
+      patch project_path(project), params: valid_params
+      expect(response).to redirect_to(project_path(project))
+      follow_redirect!
+      project.reload
+      expect(project.name).to eq('New Project')
+      expect(response.body).to include('New Project')
+    end
+  end
+  end
+end

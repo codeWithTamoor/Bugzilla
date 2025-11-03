@@ -21,7 +21,7 @@ end
 
 RSpec.configure do |config|
   # Fixtures
-  config.fixture_paths = [Rails.root.join('spec/fixtures')]
+  config.fixture_paths = [ Rails.root.join('spec/fixtures') ]
 
   # Include helpers
   config.include FactoryHelpers        # make sure factory_support.rb defines this module

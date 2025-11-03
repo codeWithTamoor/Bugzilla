@@ -12,7 +12,7 @@ RSpec.describe TicketPolicy, type: :policy do
   let!(:qa)             { create(:qa) }
 
   let!(:own_project)    { create(:project, manager: manager) }
-  let!(:foreign_project){ create(:project, manager: other_manager) }
+  let!(:foreign_project) { create(:project, manager: other_manager) }
 
   let!(:own_ticket)     { create(:ticket, project: own_project, developer: developer, qa: qa, status: :new_ticket) }
   let!(:foreign_ticket) { create(:ticket, project: foreign_project, qa: qa, status: :new_ticket) }
@@ -122,7 +122,7 @@ RSpec.describe TicketPolicy, type: :policy do
     end
   end
 
-  
+
   describe 'Scope' do
     subject(:scope) { described_class::Scope.new(user, Ticket.all).resolve }
 
