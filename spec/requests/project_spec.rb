@@ -90,6 +90,35 @@ describe '#create' do
     end
   end
 end  
+  describe '#edit' do
+    context 'when the manager owns the project' do
+      it 'renders the edit form successfully' do
+        get edit_project_path(own_project)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(own_project.name)
+      end
+    end
+    context 'when the manager does not own the project' do
+      it 'denies access to edit someone else’s project' do
+        get edit_project_path(foreign_project)
+
+        expect(response).to have_http_status(:forbidden).or have_http_status(:redirect)
+      end
+    end
+
+    context 'when a developer tries to edit a project' do
+      before { sign_in_user(developer) }
+
+      it 'denies access' do
+        get edit_project_path(own_project)
+
+        expect(response).to have_http_status(:forbidden).or have_http_status(:redirect)
+      end
+    end
+  end  
+ 
+  
   
   
 end 
